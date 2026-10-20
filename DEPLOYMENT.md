@@ -1,34 +1,34 @@
-# Deploying Brownmoor to Vercel
+# Deploying Babunest
 
-Two apps in two repositories, so **two Vercel projects**, one per repository.
-Each app sits at its repository's root, so leave Root Directory at its default.
+Two apps in two repositories, deployed as two services. The hosting platform
+has not been chosen yet, so this guide covers what any platform needs rather
+than one platform's steps. This file is kept identical in both repositories,
+since deploying either app means touching the other.
 
-| Project | Repository | Serves |
+| Service | Repository | Serves |
 | --- | --- | --- |
-| `babunest-backend` | `iamrahatkabir/babunest-backend` | Admin panel + API |
-| `babunest-storefront` | `iamrahatkabir/babunest-frontend` | The shop |
+| Backend | `iamrahatkabir/babunest-backend` | Admin panel + API (Payload) |
+| Storefront | `iamrahatkabir/babunest-frontend` | The shop |
 
-This file is kept identical in both repositories, since deploying either app
-means touching the other.
+Both are Next.js 16 apps: `npm run build`, then `npm run start`. The backend
+also ships a `Dockerfile` for container hosts.
 
 Deploy the backend first — the storefront needs its URL.
 
 ---
 
-## Before you start: the database
+## The database
+
+There is no database connected right now. The Brownmoor database was
+disconnected on 2026-10-20 so Babunest could start fresh.
+
+Create a new Postgres database and put its connection string in the
+backend's `DATABASE_URL`. If the host runs serverless functions, use a pooled
+connection string, since many short-lived connections will exhaust a direct
+endpoint.
 
 **Payload only creates tables automatically in development.** In production it
-expects migrations to have been run, and will not alter the schema on boot.
-
-That gives you two options:
-
-**A. Reuse the same Neon database (simplest).** The schema is already there
-from local development, so production connects to a database that matches the
-code. Fine for launch; it does mean local work and live orders share one
-database, so be careful running `seed:clear` once real orders exist.
-
-**B. Separate production database (safer).** Create a second Neon database,
-then generate and run migrations:
+expects migrations, and will not alter the schema on boot:
 
 ```bash
 # in the babunest-backend repo
@@ -36,137 +36,94 @@ npm run payload migrate:create
 npm run payload migrate
 ```
 
-Commit the generated files in `src/migrations` (backend repo). Vercel runs `migrate`
-on deploy only if you add it to the build command — see the backend build
-command note below.
+Commit the generated files in `src/migrations`, and run `migrate` as part of
+each deploy, before or as part of the build.
 
-Either way, use Neon's **pooled** connection string (the host contains
-`-pooler`). Serverless functions open many short connections and will exhaust a
-direct endpoint.
+## Image storage — not optional on most hosts
 
----
+Uploaded product images are written to `./media` on local disk unless
+`BLOB_READ_WRITE_TOKEN` is set, in which case they go to Vercel Blob. Neither
+is settled for the new platform:
 
-## 1. Backend project
+- On a host with a **persistent disk** (a VPS, a Docker volume), `./media`
+  works as long as it lives on that disk.
+- On a host with an **ephemeral filesystem** (most serverless and container
+  platforms), every upload disappears on the next deploy. Swap the Blob adapter
+  in `src/payload.config.ts` for Payload's S3 adapter, which also works with
+  Cloudflare R2, before going live.
 
-1. Vercel → **Add New → Project** → import `iamrahatkabir/babunest-backend`.
-2. Leave **Root Directory** at the repository root.
-3. Framework preset: Next.js. Leave the build command alone unless you chose
-   option B above, in which case set it to:
-   `npm run payload migrate && npm run build`
-4. Add environment variables:
-
-| Name | Value |
-| --- | --- |
-| `DATABASE_URL` | Neon **pooled** connection string |
-| `PAYLOAD_SECRET` | the same value as the backend's local `.env` |
-| `PAYLOAD_PUBLIC_SERVER_URL` | `https://<backend>.vercel.app` |
-| `STOREFRONT_URL` | leave blank for now, filled in step 4 |
-| `BLOB_READ_WRITE_TOKEN` | added in step 2 |
-
-`PAYLOAD_SECRET` must match what you used locally. It signs auth tokens, so
-changing it invalidates every existing session and password-reset link.
-
-You will not know the deployed URL until after the first deploy. Deploy, copy
-the URL, then set `PAYLOAD_PUBLIC_SERVER_URL` and redeploy.
-
-## 2. Blob storage — not optional
-
-Vercel's filesystem is ephemeral. Without this, every product image uploaded
-through the admin panel disappears on the next deploy.
-
-1. Vercel → **Storage → Create → Blob**, connect it to the backend project.
-2. That adds `BLOB_READ_WRITE_TOKEN` automatically. Redeploy.
-
-The code switches to Blob on its own when the token is present, and falls back
-to the local filesystem when it is not — which is why local development needs
-no token.
-
-## 3. Storefront project
-
-1. **Add New → Project** → import `iamrahatkabir/babunest-frontend`.
-2. Leave **Root Directory** at the repository root.
-3. Environment variable:
+## Backend environment
 
 | Name | Value |
 | --- | --- |
-| `NEXT_PUBLIC_PAYLOAD_URL` | `https://<backend>.vercel.app` |
+| `DATABASE_URL` | the new Postgres connection string |
+| `PAYLOAD_SECRET` | a long random string; keep it stable once set |
+| `PAYLOAD_PUBLIC_SERVER_URL` | the backend's own public URL |
+| `STOREFRONT_URL` | the storefront's public URL, exactly |
+| `BLOB_READ_WRITE_TOKEN` | only if still using Vercel Blob |
+
+`PAYLOAD_SECRET` signs auth tokens. Changing it invalidates every existing
+session and password-reset link.
+
+`STOREFRONT_URL` feeds both the CORS and CSRF allowlists. If it is wrong, the
+cart breaks in a way that looks like nothing is happening, because requests
+are rejected as cross-origin.
+
+## Storefront environment
+
+| Name | Value |
+| --- | --- |
+| `NEXT_PUBLIC_PAYLOAD_URL` | the backend's public URL |
 | `NEXT_PUBLIC_SITE_URL` | the storefront's own URL, no trailing slash |
+| `NEXT_PUBLIC_FACEBOOK_PIXEL_ID` | optional |
+| `NEXT_PUBLIC_GA_MEASUREMENT_ID` | optional |
 
 `NEXT_PUBLIC_PAYLOAD_URL` does two jobs: server-side data fetching, and the
 `/api/*` rewrite in `next.config.ts` that proxies cart and checkout calls to
-Payload. Get it wrong and products render but the cart silently fails.
+Payload. If it is wrong, products render but the cart silently fails.
 
-`NEXT_PUBLIC_SITE_URL` is the storefront's own public origin, used to build
-absolute product links in the Meta feed at `/feed/meta.xml`. You will not know
-it until after the first deploy — deploy, copy the URL, set it, redeploy. Left
+`NEXT_PUBLIC_*` values are baked in at build time, so changing one needs a
+rebuild, not just a restart.
+
+`NEXT_PUBLIC_SITE_URL` builds absolute product links in the Meta feed. Left
 unset it falls back to `http://localhost:3001`, and every link in the feed
-points at a machine Meta cannot reach. Nothing on the site itself breaks, so
-this fails silently unless you look at the feed.
+points at a machine Meta cannot reach.
 
-## 4. Close the loop
+`next.config.ts` allows images from the backend's host and from
+`*.public.blob.vercel-storage.com`. If image storage moves elsewhere, add that
+host to `images.remotePatterns`.
 
-The backend needs to know the storefront's origin for CORS and CSRF, which you
-could not know until step 3.
+## First run
 
-1. Set `STOREFRONT_URL` on the **backend** project to the storefront URL.
-2. Redeploy the backend.
-
-Skipping this leaves the cart broken in a way that looks like nothing is
-happening — requests are rejected as cross-origin.
-
-## 5. First run
-
-1. Open `https://<backend>.vercel.app/admin` and create the first account. It
-   becomes an admin automatically; every account after it defaults to customer.
-2. Add products, or run the demo catalogue against production:
-   `npm run seed` in the backend repo with `DATABASE_URL` pointed at production.
-   Prefer real products — `seed:clear` only ever removes demo data, so demo
-   entries left behind are easy to tidy later.
+1. Open `<backend>/admin` and create the first account. It becomes an admin
+   automatically; every account after it defaults to customer.
+2. Add products, or load the demo catalogue with `npm run seed` in the backend
+   repo. `seed:clear` only ever removes demo data.
 3. In **Globals → Home Page**, upload the hero banner and arrange the product
    sections.
 
-## 6. Check it works
+## Check it works
 
 - Storefront home page lists products
-- Add to cart increments the header count — this is the one that proves the
-  API proxy and CORS are right
+- Add to cart increments the header count — this proves the API proxy and CORS
+  are right
 - A test order appears under **Orders** in the admin
-- An uploaded image survives a redeploy — proves Blob is wired up
-
----
-
-## Custom domains
-
-Add the domain to the storefront project, then update `STOREFRONT_URL` on the
-backend and `NEXT_PUBLIC_SITE_URL` on the storefront, and redeploy both. If the
-backend gets its own domain too, update `PAYLOAD_PUBLIC_SERVER_URL` on the
-backend and `NEXT_PUBLIC_PAYLOAD_URL` on the storefront to match.
-
-Moving to a custom domain changes the feed's URL, so update the data feed in
-Commerce Manager as well — see below.
+- An uploaded image survives a redeploy — this proves image storage is
+  persistent
 
 ## Meta product feed
 
-The storefront publishes a catalogue feed for Facebook and Instagram at:
+The storefront publishes a catalogue feed for Facebook and Instagram at
+`https://<storefront-domain>/feed/meta.xml`. In Commerce Manager: open the
+catalogue, go to **Data sources → Add items → Data feed**, choose the
+scheduled-URL option, paste that address and set the currency to **BDT**.
 
-```
-https://<storefront-domain>/feed/meta.xml
-```
-
-In Commerce Manager: open the catalogue, go to **Data sources → Add items →
-Data feed**, choose the scheduled-URL option, paste that address and set the
-currency to **BDT**. Hourly is plenty — the feed caches for an hour anyway.
-
-Meta fetches this from its own servers, so it has to be publicly reachable.
-`localhost` will not work, and neither will the feed's product images unless
-`NEXT_PUBLIC_PAYLOAD_URL` points somewhere public too.
+Meta fetches the feed from its own servers, so it has to be publicly reachable.
+The same goes for its product images.
 
 ## Known rough edges
 
-- **Neon's free tier suspends when idle.** The first request after a pause takes
-  a few seconds to wake the database. Not a bug, but it looks like one.
 - **No email adapter is configured.** Password resets and order confirmations
-  are written to the server log rather than sent. Wire up an adapter such as
-  Resend before relying on either.
+  are written to the server log rather than sent.
 - **Orders are not yet sent to Steadfast.** Every order is read from the admin
   and entered into the courier by hand.

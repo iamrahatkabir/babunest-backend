@@ -15,7 +15,7 @@ anyone reading the repo later is concerned.
 Write one when you have changed anything that is committed to the repo:
 
 - source code, in `src/`
-- configuration (`next.config.ts`, `vercel.json`, `package.json`, env examples)
+- configuration (`next.config.ts`, `package.json`, env examples)
 - content that ships (policy page copy, admin field descriptions, seed data)
 - documentation, including this file and the changelog's own structure
 

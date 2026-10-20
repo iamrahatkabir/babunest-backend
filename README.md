@@ -72,9 +72,9 @@ pass it to the ecommerce provider. It carries no server-only code.
 
 ## Environment
 
-See `.env.example`. `BLOB_READ_WRITE_TOKEN` is optional locally but required in
-any deployed environment — Vercel's filesystem is ephemeral, so uploads written
-to local disk vanish on the next deploy.
+See `.env.example`. `BLOB_READ_WRITE_TOKEN` is optional. Without it, uploads go to
+`./media` on local disk, which is only safe on a host with a persistent disk —
+see `DEPLOYMENT.md`.
 
 `STOREFRONT_URL` must match the storefront's origin exactly or cookie-based auth
 fails: it feeds both the CORS and CSRF allowlists.

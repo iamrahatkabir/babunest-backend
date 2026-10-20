@@ -42,9 +42,9 @@ const dirname = path.dirname(filename)
 const storefrontURL = process.env.STOREFRONT_URL || 'http://localhost:3001'
 const serverURL = process.env.PAYLOAD_PUBLIC_SERVER_URL || 'http://localhost:3000'
 
-// Vercel's filesystem is ephemeral, so uploads must go to Blob in any deployed
-// environment. Locally the token is usually absent and Payload falls back to
-// writing into the repo, which keeps `npm run dev` free of external setup.
+// Uploads go to Vercel Blob when a token is set, and to ./media otherwise.
+// A host with an ephemeral filesystem needs remote storage, so this adapter
+// is due to be replaced once the hosting platform is chosen (see DEPLOYMENT.md).
 const blobToken = process.env.BLOB_READ_WRITE_TOKEN
 
 export default buildConfig({
