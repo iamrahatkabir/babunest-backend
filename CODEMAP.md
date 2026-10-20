@@ -6,10 +6,12 @@ a change makes a line untrue (see `CLAUDE.md`).
 
 ## Stack
 - Payload 3.88.0 (`payload`, `@payloadcms/next`, `ui`, `richtext-lexical`), Next 16.3.0, React 19.2.6, TS 5.7.3, ESM.
-- DB: `@payloadcms/db-postgres`, pool from `DATABASE_URL`. No `src/migrations/`: the schema exists only through dev push.
+- DB: `@payloadcms/db-postgres`, pool from `DATABASE_URL`.
+  - Dev uses push. Production uses migrations in `src/migrations/`, applied by Railway's pre-deploy step `npm run migrate`.
+- Hosting: Railway (`railway.json`). See DEPLOYMENT.md.
 - Plugins:
   - `@payloadcms/plugin-ecommerce` ^3.88.0: products + variants, carts (guest carts too), orders, transactions, addresses, inventory, payments.
-  - `@payloadcms/storage-vercel-blob`: loaded only when `BLOB_READ_WRITE_TOKEN` is set. Otherwise uploads go to `./media`.
+- Media storage: local disk at `MEDIA_DIR` (default `./media`). In production that is a Railway volume at `/data/media`. No cloud storage adapter.
 - Editor: lexical. Images: sharp 0.34.2.
 - Currency: BDT only (`src/currencies.ts`), symbol ৳, 2 decimals. **All money is integer poisha** (৳1 = 100).
 - Addresses support only country `BD`. `phone` is forced required on addresses (payload.config.ts:95-105).
@@ -21,6 +23,7 @@ a change makes a line untrue (see `CLAUDE.md`).
 - `generate:types` → `src/payload-types.ts`.
 - `generate:importmap` → `src/app/(payload)/admin/importMap.js`.
 - `payload`: Payload CLI. `lint`: eslint.
+- `migrate`: `payload migrate`. Railway runs it pre-deploy. New migration: `npm run payload migrate:create <name>`.
 - `seed` / `seed:clear`: tsx with `--env-file=.env`. Installs or removes the demo catalogue.
 - `carts:prune [-- --apply]`: finds orphaned cart lines; deletes them only with `--apply`.
 - `test`: runs `test:int` (vitest), then `test:e2e` (playwright).
@@ -54,6 +57,9 @@ src/
 - app/(frontend)/layout.tsx + page.tsx: `/` redirects to `/admin`.
 - app/(payload)/: Payload-generated admin, REST `api/[...slug]`, `api/graphql`, `api/graphql-playground`, layout and importMap.js. custom.scss is empty.
 - payload-types.ts: GENERATED. Do not edit by hand.
+- migrations/: `20261020_170531_initial` (the full schema) + `index.ts`. Generated; add new ones, never edit applied ones.
+
+root: `railway.json` (build / pre-deploy migrate / start), `docker-compose.yml` (local Postgres only, DB `babunest_dev`).
 
 tests/
 - int/api.int.spec.ts: one test, `payload.find({collection:'users'})`.
@@ -70,6 +76,7 @@ tests/
 
 **media** (upload, image/*).
 - Fields: alt:text (required). Sizes: thumbnail 300², card 640², feature w1200.
+- `staticDir` = `path.resolve(MEDIA_DIR || 'media')`. Files are served at `/api/media/file/<name>`.
 - Access: read public; write admin.
 
 **categories**
@@ -184,7 +191,7 @@ tests/
 - `PAYLOAD_SECRET`: required. Falls back to ''.
 - `PAYLOAD_PUBLIC_SERVER_URL`: serverURL. Default http://localhost:3000.
 - `STOREFRONT_URL`: cors/csrf origin. Default http://localhost:3001. Must be set in prod.
-- `BLOB_READ_WRITE_TOKEN`: optional. Enables Vercel Blob for media.
+- `MEDIA_DIR`: where uploads are written. Default `./media`. Railway: `/data/media` on a volume.
 - `test.env`: NODE_OPTIONS only. Vitest and Playwright load `.env` through dotenv.
 
 ## Seed & scripts
@@ -212,7 +219,6 @@ tests/
   - src/app/(frontend)/layout.tsx:4-5: metadata "Brownmoor.com Admin".
   - src/seed/run.ts:68 and :231: hero placeholder text.
   - src/seed/clear.ts:25.
-  - docker-compose.yml:7,16,22: `brownmoor_dev` DB.
   - README.md:1,8.
   - `BM-` spec prefix in seed/data.ts (BAKEWARE_FILLER).
 - **Money units are mixed:** `freeShippingThreshold` is in whole taka (×100 in shipping/calculate.ts:106-109). Every other amount is poisha.
@@ -225,9 +231,10 @@ tests/
 - Products.ts:48-50 has imports in mid-file. Orders.ts:9-15 has a misplaced doc comment.
 - The users roles hook runs `payload.count` on every create (Users.ts:52).
 - pruneCartItems handles at most 1000 carts per delete (hooks/pruneCartItems.ts:25).
-- **The Dockerfile build fails as-is.** It expects `output: 'standalone'` (not set in next.config.ts) and copies `/app/public`, which does not exist.
 - tests/e2e/frontend.e2e.spec.ts expects the title "Payload Blank Template" and an h1, but `/` redirects to /admin, so it fails.
 - playwright.config.ts:37 uses `pnpm dev`, but the repo uses npm (package-lock.json).
 - ProcessingOrdersBadge depends on Payload's `nav-orders` element id (ProcessingOrdersBadge.tsx:28).
 - After adding or renaming admin component paths (e.g. `@/collections/OrderItemRowLabel#…`), run `generate:importmap`.
-- There is no migrations dir. Production schema changes need migrations (see DEPLOYMENT.md).
+- **Schema changes need a migration.** Any change to collection or field config needs `npm run payload migrate:create <name>`, committed with it, or production won't have the columns.
+- Never run `npm run dev` against the production DB. Push mode conflicts with migrations.
+- Media is on a single volume, so the backend must run as one replica.

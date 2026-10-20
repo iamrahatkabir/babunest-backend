@@ -4,7 +4,7 @@
 #   docker compose up -d
 #
 # Matches the default DATABASE_URL in .env:
-#   postgres://postgres:postgres@localhost:5432/brownmoor_dev
+#   postgres://postgres:postgres@localhost:5432/babunest_dev
 
 services:
   postgres:
@@ -13,13 +13,13 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: brownmoor_dev
+      POSTGRES_DB: babunest_dev
     ports:
       - '5432:5432'
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U postgres -d brownmoor_dev']
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d babunest_dev']
       interval: 5s
       timeout: 5s
       retries: 10

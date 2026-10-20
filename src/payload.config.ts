@@ -1,7 +1,6 @@
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import { ecommercePlugin } from '@payloadcms/plugin-ecommerce'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
-import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
 import path from 'path'
 import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
@@ -41,11 +40,6 @@ const dirname = path.dirname(filename)
 // origin or authenticated (cookie-based) requests are rejected.
 const storefrontURL = process.env.STOREFRONT_URL || 'http://localhost:3001'
 const serverURL = process.env.PAYLOAD_PUBLIC_SERVER_URL || 'http://localhost:3000'
-
-// Uploads go to Vercel Blob when a token is set, and to ./media otherwise.
-// A host with an ephemeral filesystem needs remote storage, so this adapter
-// is due to be replaced once the hosting platform is chosen (see DEPLOYMENT.md).
-const blobToken = process.env.BLOB_READ_WRITE_TOKEN
 
 export default buildConfig({
   serverURL,
@@ -137,15 +131,5 @@ export default buildConfig({
       },
       transactions: true,
     }),
-    ...(blobToken
-      ? [
-          vercelBlobStorage({
-            collections: {
-              media: true,
-            },
-            token: blobToken,
-          }),
-        ]
-      : []),
   ],
 })

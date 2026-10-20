@@ -1,3 +1,4 @@
+import path from 'path'
 import type { CollectionConfig } from 'payload'
 
 import { isAdmin } from '../access'
@@ -47,5 +48,9 @@ export const Media: CollectionConfig = {
       },
     ],
     mimeTypes: ['image/*'],
+    // Uploads are written to local disk. In production MEDIA_DIR points at a
+    // mounted volume (Railway: /data/media), because the container's own
+    // filesystem is wiped on every deploy. Locally it defaults to ./media.
+    staticDir: path.resolve(process.env.MEDIA_DIR || 'media'),
   },
 }

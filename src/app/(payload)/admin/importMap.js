@@ -28,7 +28,6 @@ import { OrderItemImage as OrderItemImage_b5fdf698fed07ca99407ab0fbe1c00b4 } fro
 import { OrderItemRowLabel as OrderItemRowLabel_b5fdf698fed07ca99407ab0fbe1c00b4 } from '@/collections/OrderItemRowLabel'
 import { SectionRowLabel as SectionRowLabel_d49a90869d12fa2cc2215e71f83648bd } from '@/globals/SectionRowLabel'
 import { ProcessingOrdersBadge as ProcessingOrdersBadge_adf877c02f161ea6373058bad4ca95a5 } from '@/components/ProcessingOrdersBadge'
-import { VercelBlobClientUploadHandler as VercelBlobClientUploadHandler_16c82c5e25f430251a3e3ba57219ff4e } from '@payloadcms/storage-vercel-blob/client'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
 /** @type import('payload').ImportMap */
@@ -63,6 +62,5 @@ export const importMap = {
   "@/collections/OrderItemRowLabel#OrderItemRowLabel": OrderItemRowLabel_b5fdf698fed07ca99407ab0fbe1c00b4,
   "@/globals/SectionRowLabel#SectionRowLabel": SectionRowLabel_d49a90869d12fa2cc2215e71f83648bd,
   "@/components/ProcessingOrdersBadge#ProcessingOrdersBadge": ProcessingOrdersBadge_adf877c02f161ea6373058bad4ca95a5,
-  "@payloadcms/storage-vercel-blob/client#VercelBlobClientUploadHandler": VercelBlobClientUploadHandler_16c82c5e25f430251a3e3ba57219ff4e,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }

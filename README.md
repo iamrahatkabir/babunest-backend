@@ -1,7 +1,7 @@
 # Brownmoor — Backend
 
 Payload 3 on Next.js, serving the admin panel and the storefront API. Postgres
-for data, Vercel Blob for images.
+for data, a Railway volume for images.
 
 The commerce layer is Payload's official `@payloadcms/plugin-ecommerce`, so
 products, variants, carts, orders, transactions and addresses come from the
@@ -26,7 +26,7 @@ to `customer`.
 | Currency | BDT only. Amounts stored as integers in poisha — ৳1,250.00 is `125000`. |
 | Payment | Cash on delivery only. No gateway is integrated. |
 | Catalog | Products have variants; price and inventory live per variant. |
-| Media | Vercel Blob when `BLOB_READ_WRITE_TOKEN` is set, local disk otherwise. |
+| Media | Local disk at `MEDIA_DIR` (a Railway volume in production). |
 | Countries | Bangladesh only. The plugin's 40 built-in countries do not include it. |
 
 ## Collections
@@ -72,9 +72,8 @@ pass it to the ecommerce provider. It carries no server-only code.
 
 ## Environment
 
-See `.env.example`. `BLOB_READ_WRITE_TOKEN` is optional. Without it, uploads go to
-`./media` on local disk, which is only safe on a host with a persistent disk —
-see `DEPLOYMENT.md`.
+See `.env.example`. Uploads are written to `MEDIA_DIR` (default `./media`). In production this is
+a Railway volume; see `DEPLOYMENT.md`.
 
 `STOREFRONT_URL` must match the storefront's origin exactly or cookie-based auth
 fails: it feeds both the CORS and CSRF allowlists.
