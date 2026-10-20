@@ -1,69 +1,62 @@
 @AGENTS.md
 
-# Working rules for this repo
+# Babunest — Backend
 
-## Log every change you make
+Payload 3 admin panel + REST/GraphQL API on Next.js 16, Postgres. Its sister repo `babunest-frontend` is the storefront.
 
-**After making any change to this repository, append an entry to [CHANGELOG.md](CHANGELOG.md).**
+## Answering the user
 
-This is not optional and not something to ask permission for — it is part of
-finishing the work. A change that is not logged did not happen, as far as
-anyone reading the repo later is concerned.
+Keep replies short: the result, plus anything they must know or do. No recaps
+of steps taken, no restating the question, no option surveys. Expand only
+when asked.
 
-### When to write an entry
+## Before a task: read the map, not the code
 
-Write one when you have changed anything that is committed to the repo:
+1. **`CODEMAP.md`** describes the code as it is now: files, data model, routes,
+   business rules, env vars and gotchas. Use it to find the exact files the task
+   needs, then open only those.
+2. **`CHANGELOG.md`**: read only the newest ~10 entries, or grep for the area
+   (`grep -n "· checkout ·" CHANGELOG.md`). Never read the whole file.
 
-- source code, in `src/`
-- configuration (`next.config.ts`, `package.json`, env examples)
-- content that ships (policy page copy, admin field descriptions, seed data)
-- documentation, including this file and the changelog's own structure
+Open source files only when you are about to edit them, or when the map does
+not answer the question. If the map turns out to be wrong, fix it.
 
-Do **not** write an entry for:
+## After a change: update both files in the same turn
 
-- reading, searching or exploring the code — only changes get logged
-- scratch files, temporary scripts, or anything outside the repo
-- work you attempted and reverted, leaving no net change
+1. **`CHANGELOG.md`**: add one entry in the format below.
+2. **`CODEMAP.md`**: rewrite any line the change made untrue, such as a new or
+   removed file, field, route, rule, env var or gotcha, and bump `Last verified`.
+   If nothing structural changed, leave it alone.
 
-### When to write it
+This is not optional and needs no permission. It is part of finishing the work.
+It applies to anything committed: code, config, shipped content, docs. Skip it
+for reading or exploring, scratch files, and work that was reverted. One task
+gets **one** entry, however many files it touches.
 
-Write the entry **as part of the same turn as the change**, once the change is
-complete and verified — not batched up at the end of a long session, where the
-detail is already lost. If a single task touches several files toward one goal,
-that is **one** entry, not one per file.
+## Changelog entry format
 
-### Format
-
-Newest entries go at the **top**, directly under the `# Changelog` heading.
+Newest first, directly under the `<!-- entries -->` line. Keep each entry to
+about 6 lines. Detail belongs in code comments and the commit message.
 
 ```markdown
-## YYYY-MM-DD — Short title in plain words
-
-**What changed:** One or two sentences on what is now different.
-
-**Why:** The reason. This is the part worth reading in six months.
-
-**Files:** `path/to/file.ts`, `path/to/other.tsx`
+### YYYY-MM-DD · area · Short title in plain words
+- **What:** what is now different, in one sentence.
+- **Why:** the reason; the part worth reading in six months.
+- **Files:** `src/a.ts`, `src/b.tsx`
+- **Status:** verified (how) | untested | partial (what is left)
 ```
 
-Use today's real date. Keep the title descriptive — "Fix delivery charge
-mismatch between checkout and order" rather than "bug fix".
+Area is one of: collections, orders, cart, checkout, shipping, coupons, payments, auth, admin, media, seed, api, config, deps, docs. A change that alters the API contract between the two
+repos (fields, endpoints, response shapes) uses `api`. It is logged in **both**
+repos and updated in both maps.
 
-### Be honest in the entry
+Be honest: say when something is partial, a workaround, or untested. Use
+today's real date.
 
-The changelog is a record, not a pitch:
+When the changelog passes ~300 lines, move all but the newest 40 entries into
+`CHANGELOG-ARCHIVE.md`, newest first. Nobody reads the archive by default.
 
-- If something is a partial fix, say what is still outstanding.
-- If you worked around a problem rather than solving it, say so.
-- If a change is untested, say that too. Do not describe work as verified
-  when it was not run.
+## Next.js 16
 
-## Other rules
-
-This repo pulls in an `AGENTS.md` maintained by `next dev` (imported at the
-top of this file). It still applies — in particular, this is Next.js 16, whose
 APIs differ from older versions. Read the relevant guide in
-`node_modules/next/dist/docs/` before writing Next.js code.
-
-The storefront lives in its own repository, `babunest-frontend`.
-Changes that cross the API boundary need an entry in both changelogs.
+`node_modules/next/dist/docs/` before writing Next.js code (see `AGENTS.md`).
