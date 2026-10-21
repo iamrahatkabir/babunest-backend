@@ -65,7 +65,7 @@ const findOne = async (
 }
 
 const seed = async (payload: Payload): Promise<void> => {
-  payload.logger.info('Installing Brownmoor demo data…')
+  payload.logger.info('Installing BabuNest demo data…')
 
   // ---------------------------------------------------------------- categories
   const categoryIds: Record<string, number> = {}
@@ -228,7 +228,7 @@ const seed = async (payload: Payload): Promise<void> => {
       const banner = await uploadImage(
         payload,
         'hero-banner',
-        'Brownmoor.com',
+        'BabuNest.com',
         HOME_PAGE.heroColour,
         2400,
         1000,

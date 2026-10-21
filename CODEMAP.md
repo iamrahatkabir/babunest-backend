@@ -215,12 +215,7 @@ tests/
 - Coverage is template-level only. Coupons, shipping, COD and hooks have no tests.
 
 ## Gotchas
-- **Brownmoor name still hard-coded**
-  - src/app/(frontend)/layout.tsx:4-5: metadata "Brownmoor.com Admin".
-  - src/seed/run.ts:68 and :231: hero placeholder text.
-  - src/seed/clear.ts:25.
-  - README.md:1,8.
-  - `BM-` spec prefix in seed/data.ts (BAKEWARE_FILLER).
+- **Brand name** is `BabuNest.com` (admin metadata in src/app/(frontend)/layout.tsx, seed hero placeholder in seed/run.ts:231). Left from Brownmoor: the `BM-` spec prefix in seed/data.ts (BAKEWARE_FILLER). Demo media already in a DB keeps its old placeholder text until re-seeded.
 - **Money units are mixed:** `freeShippingThreshold` is in whole taka (×100 in shipping/calculate.ts:106-109). Every other amount is poisha.
 - Free shipping is tested against the **pre-discount** subtotal (cashOnDelivery.ts:195-200).
 - Coupon `usageCount` is incremented read-then-+1, not atomically. Concurrent orders can overshoot usageLimit (cashOnDelivery.ts:252-258).

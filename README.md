@@ -1,11 +1,11 @@
-# Brownmoor — Backend
+# BabuNest — Backend
 
 Payload 3 on Next.js, serving the admin panel and the storefront API. Postgres
 for data, a Railway volume for images.
 
 The commerce layer is Payload's official `@payloadcms/plugin-ecommerce`, so
 products, variants, carts, orders, transactions and addresses come from the
-plugin. This repo configures it and adds the parts specific to Brownmoor.
+plugin. This repo configures it and adds the parts specific to BabuNest.
 
 ## Running locally
 

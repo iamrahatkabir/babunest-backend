@@ -22,7 +22,7 @@ import { CATEGORIES, imageName, PRODUCTS, VARIANT_TYPES } from './data'
  */
 
 const clear = async (payload: Payload): Promise<void> => {
-  payload.logger.info('Removing Brownmoor demo data…')
+  payload.logger.info('Removing BabuNest demo data…')
 
   const demoSlugs = PRODUCTS.map((p) => p.slug)
 
