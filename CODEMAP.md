@@ -9,6 +9,7 @@ a change makes a line untrue (see `CLAUDE.md`).
 - DB: `@payloadcms/db-postgres`, pool from `DATABASE_URL`.
   - Dev uses push. Production uses migrations in `src/migrations/`, applied by Railway's pre-deploy step `npm run migrate`.
 - Hosting: Railway (`railway.json`). See DEPLOYMENT.md.
+- Package manager: **npm only** (`packageManager: npm@10.8.2`, `package-lock.json`). Keep all `payload` / `@payloadcms/*` versions pinned to the same exact version; a mismatch breaks the build.
 - Plugins:
   - `@payloadcms/plugin-ecommerce` ^3.88.0: products + variants, carts (guest carts too), orders, transactions, addresses, inventory, payments.
 - Media storage: local disk at `MEDIA_DIR` (default `./media`). In production that is a Railway volume at `/data/media`. No cloud storage adapter.

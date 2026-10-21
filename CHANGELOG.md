@@ -5,6 +5,12 @@ Newest first. Rules and entry format are in `CLAUDE.md`. Entries before
 
 <!-- entries -->
 
+### 2026-10-21 · deps · Force npm on Railway and pin Payload plugin versions
+- **What:** `packageManager` is now `npm@10.8.2` and `@payloadcms/plugin-ecommerce` is pinned to exactly 3.88.0 (was ^3.88.0). Removed `engines.pnpm`, the `pnpm` config block and the unused `.yarnrc`.
+- **Why:** The first Railway build picked pnpm (from `engines.pnpm`), ignored `package-lock.json` and installed plugin-ecommerce 3.91.0 against payload 3.88.0. The build failed with "Export uploadRequiresServerValidation doesn't exist".
+- **Files:** `package.json`, `package-lock.json`, `.yarnrc` (deleted), `CODEMAP.md`
+- **Status:** the backend `npm run build` passes locally. Not yet confirmed on Railway.
+
 ### 2026-10-21 · docs · Rename the brand from Brownmoor.com to BabuNest.com
 - **What:** Every visible "Brownmoor.com" / "Brownmoor" is now "BabuNest.com" / "BabuNest".
 - **Why:** The shop is relaunching as BabuNest.
