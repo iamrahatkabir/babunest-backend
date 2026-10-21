@@ -5,6 +5,12 @@ Newest first. Rules and entry format are in `CLAUDE.md`. Entries before
 
 <!-- entries -->
 
+### 2026-10-21 · config · Live on babunest.com; document the Cloudflare setup
+- **What:** `DEPLOYMENT.md` now records the live setup: Cloudflare DNS (`@` and `www` proxied, `api` DNS only), the www→root redirect rule, the live URLs and the domain variables.
+- **Why:** With `api` proxied, the storefront's `/api` forwarding hit Cloudflare Error 1000 (403), which broke the cart while pages still loaded. It was fixed by switching `api` to DNS only, and that must not be undone.
+- **Files:** `DEPLOYMENT.md`
+- **Status:** verified live: www → 301 to root (query kept), images and the feed served from the domain, CORS allows babunest.com, and add to cart on babunest.com works (count 1, no errors). No order placed on production yet.
+
 ### 2026-10-21 · config · Railway deploy unblocked: backend live with its tables
 - **What:** Deleted `CURRENT-BOTTLENECK.md` and the Open issue line in `CLAUDE.md`. The backend at https://babunest-backend-production.up.railway.app is live.
 - **Why:** Resolved by `prodMigrations` (previous entry): the deploy applied `20261020_170531_initial` on start. The earlier 6-minute build failure didn't recur after the variables and the `/data` volume were set, so its cause is still unknown.

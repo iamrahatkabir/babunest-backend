@@ -116,15 +116,42 @@ them on the next deploy.
 **Never point `npm run dev` at the production database.** Dev mode alters the
 schema directly and will conflict with migrations.
 
-## Custom domain
+## Custom domain (live: babunest.com)
 
-Add it to `frontend` (Settings → Networking → Custom Domain). Then update
-`STOREFRONT_URL` on the backend to `https://<your-domain>`. The frontend's
-`NEXT_PUBLIC_SITE_URL` updates by itself only if it uses
-`${{RAILWAY_PUBLIC_DOMAIN}}` and the custom domain is the primary one.
-Otherwise, set it by hand and redeploy. If the backend gets its own domain,
-update `PAYLOAD_PUBLIC_SERVER_URL` and the frontend's
-`NEXT_PUBLIC_PAYLOAD_URL`.
+DNS for babunest.com is on **Cloudflare** (free plan). The domain is still
+registered at Hostinger, but its nameservers point to Cloudflare, because
+Hostinger can't point the root domain at Railway.
+
+| Record | Points to | Cloudflare proxy |
+| --- | --- | --- |
+| `@` (babunest.com) | frontend's Railway CNAME target | **Proxied** (orange) |
+| `www` | frontend | **Proxied**, needed by the redirect rule |
+| `api` | backend's Railway CNAME target | **DNS only** (grey). Must stay grey. |
+| `_railway-verify.*` | TXT records from Railway | n/a |
+
+- **`api` must be DNS only.** The storefront's server forwards `/api/*` to
+  `api.babunest.com`. If that record is proxied, Cloudflare blocks the
+  forwarded requests as a loop (**Error 1000 "DNS points to prohibited IP"**,
+  403), and the cart and checkout stop working while pages still load.
+- **www → root:** Cloudflare Rules → Redirect Rules → "Redirect from WWW to
+  root" template (301, preserve query string). `www.babunest.com` is not added
+  in Railway.
+
+Live URLs:
+
+| | URL |
+| --- | --- |
+| Shop | https://babunest.com |
+| Admin | https://api.babunest.com/admin |
+| Meta feed | https://babunest.com/feed/meta.xml |
+
+Variables for this setup:
+
+- backend: `PAYLOAD_PUBLIC_SERVER_URL=https://api.babunest.com`, `STOREFRONT_URL=https://babunest.com`
+- frontend: `NEXT_PUBLIC_PAYLOAD_URL=https://api.babunest.com`, `NEXT_PUBLIC_SITE_URL=https://babunest.com`
+
+`NEXT_PUBLIC_*` values are baked in at build time, so redeploy the frontend
+after changing them.
 
 ## Meta product feed
 
