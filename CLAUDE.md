@@ -4,6 +4,8 @@
 
 Payload 3 admin panel + REST/GraphQL API on Next.js 16, Postgres. Its sister repo `babunest-frontend` is the storefront.
 
+**Open issue:** the Railway deploy is blocked. Read `CURRENT-BOTTLENECK.md` first, and remove this line when that file is deleted.
+
 ## Answering the user
 
 Keep replies short: the result, plus anything they must know or do. No recaps

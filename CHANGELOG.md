@@ -5,6 +5,12 @@ Newest first. Rules and entry format are in `CLAUDE.md`. Entries before
 
 <!-- entries -->
 
+### 2026-10-21 · docs · Record the Railway build failure in CURRENT-BOTTLENECK.md
+- **What:** Added `CURRENT-BOTTLENECK.md`, covering the failed Railway backend build, what's known, likely causes, next steps, the Railway variables (no secrets) and the post-launch tasks. `CLAUDE.md` now points to it.
+- **Why:** The build log couldn't be read today. This keeps the state so the work can pick up later without re-investigating.
+- **Files:** `CURRENT-BOTTLENECK.md`, `CLAUDE.md`
+- **Status:** documentation only. The backend is still not deployed.
+
 ### 2026-10-21 · deps · Force npm on Railway and pin Payload plugin versions
 - **What:** `packageManager` is now `npm@10.8.2` and `@payloadcms/plugin-ecommerce` is pinned to exactly 3.88.0 (was ^3.88.0). Removed `engines.pnpm`, the `pnpm` config block and the unused `.yarnrc`.
 - **Why:** The first Railway build picked pnpm (from `engines.pnpm`), ignored `package-lock.json` and installed plugin-ecommerce 3.91.0 against payload 3.88.0. The build failed with "Export uploadRequiresServerValidation doesn't exist".
