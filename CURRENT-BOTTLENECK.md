@@ -1,6 +1,6 @@
 # Current bottleneck: backend fails to build on Railway
 
-_Opened 2026-10-21. Delete this file once the backend is live._
+_Opened 2026-10-21. Update this file after every attempt. When resolved, delete it, remove the Open issue line from `CLAUDE.md`, and log the fix in `CHANGELOG.md`._
 
 ## Status
 

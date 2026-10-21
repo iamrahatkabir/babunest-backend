@@ -5,6 +5,12 @@ Newest first. Rules and entry format are in `CLAUDE.md`. Entries before
 
 <!-- entries -->
 
+### 2026-10-21 · docs · Rule for keeping CURRENT-BOTTLENECK.md current
+- **What:** `CLAUDE.md` now says how to handle blockers: record them in `CURRENT-BOTTLENECK.md`, update it after every attempt, and delete it (and its pointer line) once resolved.
+- **Why:** The brand owner wants that file to always reflect the real state, never a stale or already-fixed problem.
+- **Files:** `CLAUDE.md`, `CURRENT-BOTTLENECK.md`
+- **Status:** documentation only.
+
 ### 2026-10-21 · docs · Record the Railway build failure in CURRENT-BOTTLENECK.md
 - **What:** Added `CURRENT-BOTTLENECK.md`, covering the failed Railway backend build, what's known, likely causes, next steps, the Railway variables (no secrets) and the post-launch tasks. `CLAUDE.md` now points to it.
 - **Why:** The build log couldn't be read today. This keeps the state so the work can pick up later without re-investigating.

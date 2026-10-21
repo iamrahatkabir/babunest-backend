@@ -4,13 +4,25 @@
 
 Payload 3 admin panel + REST/GraphQL API on Next.js 16, Postgres. Its sister repo `babunest-frontend` is the storefront.
 
-**Open issue:** the Railway deploy is blocked. Read `CURRENT-BOTTLENECK.md` first, and remove this line when that file is deleted.
+**Open issue:** the Railway deploy is blocked. Read `CURRENT-BOTTLENECK.md` first.
 
 ## Answering the user
 
 Keep replies short: the result, plus anything they must know or do. No recaps
 of steps taken, no restating the question, no option surveys. Expand only
 when asked.
+
+## Blockers: `CURRENT-BOTTLENECK.md`
+
+When something blocks progress (a failing deploy, a bug you can't fix yet),
+record it in `CURRENT-BOTTLENECK.md` at the repo root and add an
+**Open issue** line under the title of this file pointing to it. Keep it true:
+
+- After every attempt at the blocker, update the file with what was tried,
+  what the result was, and what is next.
+- When it is resolved, **delete the file**, remove the Open issue line, and
+  say in that change's changelog entry how it was resolved.
+- When there is no blocker, neither the file nor the line exists.
 
 ## Before a task: read the map, not the code
 
