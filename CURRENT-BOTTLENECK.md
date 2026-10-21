@@ -2,50 +2,43 @@
 
 _Opened 2026-10-21. Update this file after every attempt. When resolved, delete it, remove the Open issue line from `CLAUDE.md`, and log the fix in `CHANGELOG.md`._
 
-## Status
+## Status (updated 2026-10-21, after the second attempt)
 
-| Service | Railway URL | State |
-| --- | --- | --- |
-| Postgres | (private) | Online |
-| backend (`babunest-backend`) | https://babunest-backend-production.up.railway.app | **Latest build failed.** The old deployment is still live and returns 500 "There was an error initializing Payload" on every route. |
-| frontend | https://babunest-frontend-production.up.railway.app | Online. Pages load but show no products, because the backend is down. |
+| Service | State |
+| --- | --- |
+| Postgres | Online |
+| backend | **Builds and runs now.** `/admin` returns 200 and Payload starts. But every route that reads the database returns 500 "Something went wrong" (`/api/categories`, `/api/media`, `/api/globals/*`, `/api/products`, `/api/variants`). |
+| frontend | Online, but empty because of the above. |
 
-## Symptom
+The volume (`babunest-backend-volume`, mounted at `/data`) and all five variables are set.
 
-The latest backend deployment fails at **Build › Build image**: "Failed to build an image. Please check the build logs for more details." The build ran about 5m46s before failing.
+## Diagnosis
 
-The build log itself has **not been read yet**. Railway's AI diagnosis was unavailable ("Agent usage limit reached"). That message only concerns Railway's helper, not the plan or the deploy.
+Payload starts, but **the database tables were never created**. Railway's pre-deploy `npm run migrate` either didn't run or failed without blocking the deploy. Its log hasn't been read.
 
-## What is already known
+The earlier *build* failure (about 6 minutes, cause unseen) didn't recur after the variables and volume were set. It's resolved, cause unknown.
 
-1. **First failure, fixed:** Railway picked pnpm (from `engines.pnpm`), ignored `package-lock.json` and installed `@payloadcms/plugin-ecommerce` 3.91.0 against `payload` 3.88.0. The build failed with "Export uploadRequiresServerValidation doesn't exist".
-   - Fixed in commit `35f2deb`: `packageManager: npm@10.8.2`, plugin pinned to 3.88.0, pnpm hints and `.yarnrc` removed.
-2. **The 500 on the live deployment** comes from the earlier deploy, which ran with **no variables saved**. Railway's "Suggested Variables" panel showed values from `.env.example`, which are not saved until **Add** is clicked. After that, the variables were set and a new deploy was started, and that is the build that fails.
-3. **The code builds.** A clean `git archive` copy of `HEAD` with `npx npm@10.8.2 ci` and `npm run build` succeeds locally (macOS, 2026-10-21). So the failure is specific to Railway's build environment.
+## Fix applied, waiting to deploy
 
-## Likely causes, most likely first
-
-1. **Memory or time on the builder.** `npm run build` sets `--max-old-space-size=8000` (8 GB heap). If the builder has less memory, the build is killed. The ~6-minute run, against ~2 minutes for the first build, points this way.
-   - Fix: lower it to `--max-old-space-size=4096` in `package.json` > `scripts.build`, or remove it.
-2. **The `packageManager: npm@10.8.2` field** makes Railpack fetch that exact npm through corepack or mise. If that step fails or hangs, the build fails.
-   - Fix: remove `packageManager` and rely on `package-lock.json` alone, now that the pnpm hints are gone.
-3. **Something only the log shows**, such as a missing Linux binary (sharp, `@next/swc-linux-x64-gnu`).
+- `src/payload.config.ts`: `postgresAdapter({ prodMigrations: migrations })`. Payload now applies pending migrations itself when the server starts in production, so the tables no longer depend on the pre-deploy step.
+- Verified locally: a production build plus `next start` against an empty Postgres logged `Migrated: 20261020_170531_initial`, and `/api/categories`, `/api/globals/navigation` and `/api/products` all returned 200.
 
 ## Next steps
 
-1. Open the failed deployment → **Build logs** → scroll to the bottom → copy the last 15–20 lines.
-2. Match them to a cause above and apply that fix in `package.json`. Then run `npm install` (keep the lockfile in sync), `npm run build` locally, commit, log it in `CHANGELOG.md`, and push.
-3. When the deploy is green, check that `https://babunest-backend-production.up.railway.app/admin` shows **Create first user**. Create the admin account.
-   - If it still shows 500, read the **pre-deploy** log (migration `20261020_170531_initial`) and **deploy** log. Check that `DATABASE_URL` resolves to a real `postgresql://` URL and that `PAYLOAD_SECRET` is set.
+1. Push `babunest-backend`, which redeploys it.
+2. Check that `https://babunest-backend-production.up.railway.app/api/categories?limit=1` returns 200 (`{"docs":[]...}`).
+3. Open `/admin`, create the admin account, then redeploy the frontend.
+4. If it is still 500, read the **Deploy logs** for `Migrating:` / `Migrated:` lines or a database error.
+5. When it works, delete this file and the Open issue lines (both repos), and log the resolution.
 
 ## Railway variables (no secret values here)
 
 **backend:**
-- `DATABASE_URL=${{Postgres.DATABASE_URL}}` (the reference, not the `.env.example` placeholder)
-- `PAYLOAD_SECRET` (set in Railway; never commit it)
+- `DATABASE_URL=${{Postgres.DATABASE_URL}}`
+- `PAYLOAD_SECRET` (set in Railway; it was shown in a screenshot on 2026-10-21, so rotate it before the first account is created)
 - `PAYLOAD_PUBLIC_SERVER_URL=https://babunest-backend-production.up.railway.app`
-- `STOREFRONT_URL=https://babunest-frontend-production.up.railway.app` (switch to `https://babunest.com` once the domain is connected)
-- `MEDIA_DIR=/data/media`, with a volume mounted at `/data`
+- `STOREFRONT_URL`: should be `https://babunest-frontend-production.up.railway.app` until the domain is connected (it was `https://babunest.com`)
+- `MEDIA_DIR=/data/media`
 
 **frontend:**
 - `NEXT_PUBLIC_PAYLOAD_URL=https://babunest-backend-production.up.railway.app`
@@ -53,10 +46,10 @@ The build log itself has **not been read yet**. Railway's AI diagnosis was unava
 
 ## After the backend is live
 
-1. Add real products and set the Home Page, Navigation and Shipping Settings globals in the admin.
+1. Add real products and set the Home Page, Navigation and Shipping Settings globals.
 2. Test an order end to end on the Railway frontend URL.
 3. **Custom domain**
-   - Move babunest.com's DNS from Hostinger to Cloudflare (free), because Hostinger can't point the root domain at Railway.
-   - Add `babunest.com` (and `www`) to the frontend and `api.babunest.com` to the backend.
-   - Update the four URL variables above, then redeploy both.
-4. Later: replace the placeholder email `hellobrownmoor@gmail.com` in `Frontend/src/lib/contact.ts`, and add an email adapter for order emails and password resets.
+   - Move babunest.com's DNS from Hostinger to Cloudflare.
+   - Add `babunest.com` and `www` to the frontend and `api.babunest.com` to the backend.
+   - Update the four URL variables and redeploy both.
+4. Later: replace the placeholder email in `Frontend/src/lib/contact.ts`, and add an email adapter.

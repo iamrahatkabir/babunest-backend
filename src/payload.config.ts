@@ -27,6 +27,7 @@ import {
   variantTypesCollectionOverride,
 } from './collections/Variants'
 import { currenciesConfig } from './currencies'
+import { migrations } from './migrations'
 import { HomePage } from './globals/HomePage'
 import { Navigation } from './globals/Navigation'
 import { ShippingSettings } from './globals/ShippingSettings'
@@ -66,6 +67,10 @@ export default buildConfig({
     pool: {
       connectionString: process.env.DATABASE_URL || '',
     },
+    // In production, apply any pending migrations when the server starts.
+    // Railway's pre-deploy `npm run migrate` does the same; this is the
+    // backstop that guarantees the tables exist before the first request.
+    prodMigrations: migrations,
   }),
   cors: [storefrontURL],
   csrf: [storefrontURL],

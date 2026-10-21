@@ -5,6 +5,12 @@ Newest first. Rules and entry format are in `CLAUDE.md`. Entries before
 
 <!-- entries -->
 
+### 2026-10-21 · config · Run database migrations on server start in production
+- **What:** `postgresAdapter` now has `prodMigrations: migrations`, so Payload applies pending migrations itself when it starts in production, alongside Railway's pre-deploy `npm run migrate`.
+- **Why:** On Railway, Payload started but every read returned 500 because no tables existed. The pre-deploy migration hadn't run or had failed quietly.
+- **Files:** `src/payload.config.ts`, `CODEMAP.md`, `CURRENT-BOTTLENECK.md`
+- **Status:** verified locally with a production build and `next start` on an empty Postgres: it logged `Migrated: 20261020_170531_initial`, and categories, navigation and products returned 200. Not yet deployed.
+
 ### 2026-10-21 · docs · Rule for keeping CURRENT-BOTTLENECK.md current
 - **What:** `CLAUDE.md` now says how to handle blockers: record them in `CURRENT-BOTTLENECK.md`, update it after every attempt, and delete it (and its pointer line) once resolved.
 - **Why:** The brand owner wants that file to always reflect the real state, never a stale or already-fixed problem.

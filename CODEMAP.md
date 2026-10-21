@@ -7,7 +7,7 @@ a change makes a line untrue (see `CLAUDE.md`).
 ## Stack
 - Payload 3.88.0 (`payload`, `@payloadcms/next`, `ui`, `richtext-lexical`), Next 16.3.0, React 19.2.6, TS 5.7.3, ESM.
 - DB: `@payloadcms/db-postgres`, pool from `DATABASE_URL`.
-  - Dev uses push. Production uses migrations in `src/migrations/`, applied by Railway's pre-deploy step `npm run migrate`.
+  - Dev uses push. Production uses migrations in `src/migrations/`, applied twice over: Railway's pre-deploy `npm run migrate`, and `prodMigrations` in `postgresAdapter`, which runs pending ones on server start.
 - Hosting: Railway (`railway.json`). See DEPLOYMENT.md.
 - Package manager: **npm only** (`packageManager: npm@10.8.2`, `package-lock.json`). Keep all `payload` / `@payloadcms/*` versions pinned to the same exact version; a mismatch breaks the build.
 - Plugins:
