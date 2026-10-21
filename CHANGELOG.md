@@ -5,6 +5,12 @@ Newest first. Rules and entry format are in `CLAUDE.md`. Entries before
 
 <!-- entries -->
 
+### 2026-10-21 · config · Railway deploy unblocked: backend live with its tables
+- **What:** Deleted `CURRENT-BOTTLENECK.md` and the Open issue line in `CLAUDE.md`. The backend at https://babunest-backend-production.up.railway.app is live.
+- **Why:** Resolved by `prodMigrations` (previous entry): the deploy applied `20261020_170531_initial` on start. The earlier 6-minute build failure didn't recur after the variables and the `/data` volume were set, so its cause is still unknown.
+- **Files:** `CURRENT-BOTTLENECK.md` (deleted), `CLAUDE.md`
+- **Status:** verified on Railway: categories, navigation, products, home-page and shipping-settings all return 200. The admin account isn't created yet, and no order has been tested on Railway.
+
 ### 2026-10-21 · config · Run database migrations on server start in production
 - **What:** `postgresAdapter` now has `prodMigrations: migrations`, so Payload applies pending migrations itself when it starts in production, alongside Railway's pre-deploy `npm run migrate`.
 - **Why:** On Railway, Payload started but every read returned 500 because no tables existed. The pre-deploy migration hadn't run or had failed quietly.
